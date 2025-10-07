@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>History & Analytics - Irrigation Scheduler</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <nav class="bg-green-700 text-white p-4 flex justify-between items-center">
+    <span class="font-bold text-xl">Irrigation Scheduler</span>
+    <div>
+      <a href="dashboard.html" class="mr-4 hover:underline">Dashboard</a>
+      <a href="fields.html" class="mr-4 hover:underline">Fields</a>
+      <a href="history.html" class="mr-4 hover:underline">History</a>
+      <a href="profile.html" class="hover:underline">Profile</a>
+    </div>
+  </nav>
+  <main class="p-6 max-w-5xl mx-auto">
+    <h2 class="text-2xl font-bold mb-6">Irrigation History & Analytics</h2>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="bg-white rounded shadow p-6">
+        <p class="text-gray-500 text-sm mb-1">Total Water Used (This Month)</p>
+        <p class="text-3xl font-bold text-blue-600">2,340 L</p>
+      </div>
+      <div class="bg-white rounded shadow p-6">
+        <p class="text-gray-500 text-sm mb-1">Irrigation Events</p>
+        <p class="text-3xl font-bold text-green-600">12</p>
+      </div>
+      <div class="bg-white rounded shadow p-6">
+        <p class="text-gray-500 text-sm mb-1">Water Saved (vs. Manual)</p>
+        <p class="text-3xl font-bold text-purple-600">18%</p>
+      </div>
+    </div>
+
+    <!-- Chart Placeholder -->
+    <div class="bg-white rounded shadow p-6 mb-6">
+      <h3 class="text-lg font-semibold mb-4">Water Usage Over Time</h3>
+      <div class="h-64 bg-gray-100 rounded flex items-center justify-center">
+        <p class="text-gray-500">[Chart: Line graph showing daily water usage]</p>
+      </div>
+    </div>
+
+    <!-- Recent History Table -->
+    <div class="bg-white rounded shadow p-6">
+      <h3 class="text-lg font-semibold mb-4">Recent Irrigation Events</h3>
+      <table class="w-full text-left">
+        <thead class="border-b">
+          <tr>
+            <th class="pb-2">Date</th>
+            <th class="pb-2">Field</th>
+            <th class="pb-2">Duration</th>
+            <th class="pb-2">Water Used</th>
+            <th class="pb-2">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-b">
+            <td class="py-3">Sep 18, 2025</td>
+            <td>Field A</td>
+            <td>2h 15min</td>
+            <td>180 L</td>
+            <td><span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">Completed</span></td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-3">Sep 16, 2025</td>
+            <td>Field B</td>
+            <td>1h 45min</td>
+            <td>120 L</td>
+            <td><span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">Completed</span></td>
+          </tr>
+          <tr class="border-b">
+            <td class="py-3">Sep 15, 2025</td>
+            <td>Field A</td>
+            <td>2h 00min</td>
+            <td>160 L</td>
+            <td><span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">Completed</span></td>
+          </tr>
+          <tr>
+            <td class="py-3">Sep 13, 2025</td>
+            <td>Field C</td>
+            <td>N/A</td>
+            <td>0 L</td>
+            <td><span class="px-2 py-1 bg-red-100 text-red-700 text-xs rounded">Skipped</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</body>
+</html>

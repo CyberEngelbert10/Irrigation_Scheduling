@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Fields - Irrigation Scheduler</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <nav class="bg-green-700 text-white p-4 flex justify-between items-center">
+    <span class="font-bold text-xl">Irrigation Scheduler</span>
+    <div>
+      <a href="dashboard.html" class="mr-4 hover:underline">Dashboard</a>
+      <a href="fields.html" class="mr-4 hover:underline">Fields</a>
+      <a href="profile.html" class="hover:underline">Profile</a>
+    </div>
+  </nav>
+  <main class="p-6 max-w-5xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold">My Fields</h2>
+      <a href="crop_field_form.html" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">+ Add Field</a>
+    </div>
+    
+    <!-- Field Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Field Card 1 -->
+      <div class="bg-white rounded shadow p-6 hover:shadow-lg transition">
+        <div class="flex justify-between items-start mb-3">
+          <h3 class="text-xl font-semibold">Field A</h3>
+          <span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">Active</span>
+        </div>
+        <div class="text-gray-600 mb-2">
+          <p><span class="font-semibold">Crop:</span> Maize</p>
+          <p><span class="font-semibold">Area:</span> 1,000 sq. m</p>
+          <p><span class="font-semibold">Soil Moisture:</span> 35%</p>
+          <p><span class="font-semibold">Next Irrigation:</span> Tomorrow, 7:00 AM</p>
+        </div>
+        <div class="flex gap-2 mt-4">
+          <button class="flex-1 bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600">View Details</button>
+          <button class="flex-1 border border-gray-300 px-3 py-2 rounded text-sm hover:bg-gray-100">Edit</button>
+        </div>
+      </div>
+
+      <!-- Field Card 2 -->
+      <div class="bg-white rounded shadow p-6 hover:shadow-lg transition">
+        <div class="flex justify-between items-start mb-3">
+          <h3 class="text-xl font-semibold">Field B</h3>
+          <span class="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded">Pending</span>
+        </div>
+        <div class="text-gray-600 mb-2">
+          <p><span class="font-semibold">Crop:</span> Tomatoes</p>
+          <p><span class="font-semibold">Area:</span> 500 sq. m</p>
+          <p><span class="font-semibold">Soil Moisture:</span> 42%</p>
+          <p><span class="font-semibold">Next Irrigation:</span> Sep 20, 2025, 6:00 AM</p>
+        </div>
+        <div class="flex gap-2 mt-4">
+          <button class="flex-1 bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600">View Details</button>
+          <button class="flex-1 border border-gray-300 px-3 py-2 rounded text-sm hover:bg-gray-100">Edit</button>
+        </div>
+      </div>
+
+      <!-- Field Card 3 -->
+      <div class="bg-white rounded shadow p-6 hover:shadow-lg transition">
+        <div class="flex justify-between items-start mb-3">
+          <h3 class="text-xl font-semibold">Field C</h3>
+          <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">Inactive</span>
+        </div>
+        <div class="text-gray-600 mb-2">
+          <p><span class="font-semibold">Crop:</span> Wheat</p>
+          <p><span class="font-semibold">Area:</span> 1,500 sq. m</p>
+          <p><span class="font-semibold">Soil Moisture:</span> N/A</p>
+          <p><span class="font-semibold">Next Irrigation:</span> Not scheduled</p>
+        </div>
+        <div class="flex gap-2 mt-4">
+          <button class="flex-1 bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600">View Details</button>
+          <button class="flex-1 border border-gray-300 px-3 py-2 rounded text-sm hover:bg-gray-100">Edit</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

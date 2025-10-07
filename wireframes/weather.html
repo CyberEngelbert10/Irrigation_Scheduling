@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Overview - Irrigation Scheduler</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <nav class="bg-green-700 text-white p-4 flex justify-between items-center">
+    <span class="font-bold text-xl">Irrigation Scheduler</span>
+    <div>
+      <a href="dashboard.html" class="mr-4 hover:underline">Dashboard</a>
+      <a href="fields.html" class="mr-4 hover:underline">Fields</a>
+      <a href="weather.html" class="mr-4 hover:underline">Weather</a>
+      <a href="profile.html" class="hover:underline">Profile</a>
+    </div>
+  </nav>
+  <main class="p-6 max-w-4xl mx-auto">
+    <h2 class="text-2xl font-bold mb-6">Weather Overview</h2>
+
+    <!-- Current Weather -->
+    <div class="bg-gradient-to-br from-blue-400 to-blue-600 text-white rounded-lg shadow-lg p-8 mb-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-lg mb-2">Current Weather</p>
+          <p class="text-5xl font-bold mb-2">28°C</p>
+          <p class="text-lg">Sunny, Clear Skies</p>
+          <p class="text-sm mt-2">Humidity: 55% | Wind: 12 km/h</p>
+        </div>
+        <div class="text-8xl">☀️</div>
+      </div>
+    </div>
+
+    <!-- 7-Day Forecast -->
+    <div class="bg-white rounded shadow p-6 mb-6">
+      <h3 class="text-lg font-semibold mb-4">7-Day Forecast</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+        <div class="border rounded p-3 text-center hover:bg-gray-50">
+          <p class="text-sm font-semibold mb-2">Mon</p>
+          <p class="text-3xl mb-2">☀️</p>
+          <p class="font-semibold">28°C</p>
+          <p class="text-xs text-gray-500">0% rain</p>
+        </div>
+        <div class="border rounded p-3 text-center hover:bg-gray-50">
+          <p class="text-sm font-semibold mb-2">Tue</p>
+          <p class="text-3xl mb-2">⛅</p>
+          <p class="font-semibold">26°C</p>
+          <p class="text-xs text-gray-500">10% rain</p>
+        </div>
+        <div class="border rounded p-3 text-center hover:bg-gray-50">
+          <p class="text-sm font-semibold mb-2">Wed</p>
+          <p class="text-3xl mb-2">🌧️</p>
+          <p class="font-semibold">24°C</p>
+          <p class="text-xs text-gray-500">70% rain</p>
+        </div>
+        <div class="border rounded p-3 text-center hover:bg-gray-50">
+          <p class="text-sm font-semibold mb-2">Thu</p>
+          <p class="text-3xl mb-2">🌦️</p>
+          <p class="font-semibold">25°C</p>
+          <p class="text-xs text-gray-500">40% rain</p>
+        </div>
+        <div class="border rounded p-3 text-center hover:bg-gray-50">
+          <p class="text-sm font-semibold mb-2">Fri</p>
+          <p class="text-3xl mb-2">⛅</p>
+          <p class="font-semibold">27°C</p>
+          <p class="text-xs text-gray-500">20% rain</p>
+        </div>
+        <div class="border rounded p-3 text-center hover:bg-gray-50">
+          <p class="text-sm font-semibold mb-2">Sat</p>
+          <p class="text-3xl mb-2">☀️</p>
+          <p class="font-semibold">29°C</p>
+          <p class="text-xs text-gray-500">5% rain</p>
+        </div>
+        <div class="border rounded p-3 text-center hover:bg-gray-50">
+          <p class="text-sm font-semibold mb-2">Sun</p>
+          <p class="text-3xl mb-2">☀️</p>
+          <p class="font-semibold">30°C</p>
+          <p class="text-xs text-gray-500">0% rain</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weather Alerts -->
+    <div class="bg-white rounded shadow p-6">
+      <h3 class="text-lg font-semibold mb-4">Weather Alerts</h3>
+      <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-3">
+        <p class="font-semibold text-yellow-800">⚠️ Heavy Rain Expected</p>
+        <p class="text-sm text-yellow-700 mt-1">Wednesday, Sep 21 - Rainfall of 40mm expected. Irrigation not recommended.</p>
+      </div>
+      <div class="bg-blue-50 border-l-4 border-blue-500 p-4">
+        <p class="font-semibold text-blue-800">ℹ️ Low Humidity</p>
+        <p class="text-sm text-blue-700 mt-1">Next 3 days - Humidity below 50%. Consider increasing irrigation duration.</p>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
