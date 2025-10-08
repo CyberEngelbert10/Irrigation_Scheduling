@@ -129,4 +129,41 @@ export const fieldAPI = {
   },
 };
 
+// Weather API
+export const weatherAPI = {
+  // Get current weather
+  async getCurrent(data: { latitude: number; longitude: number; location_name?: string }) {
+    const response = await api.post('/weather/weather-data/current/', data);
+    return response.data;
+  },
+
+  // Get weather forecast
+  async getForecast(data: { latitude: number; longitude: number; days?: number }) {
+    const response = await api.post('/weather/forecast/forecast/', data);
+    return response.data;
+  },
+
+  // Get weather alerts
+  async getAlerts(latitude: number, longitude: number) {
+    const response = await api.get('/weather/alerts/alerts/', {
+      params: { latitude, longitude }
+    });
+    return response.data;
+  },
+
+  // Get weather statistics
+  async getStats(latitude: number, longitude: number, days: number = 7) {
+    const response = await api.get('/weather/stats/', {
+      params: { latitude, longitude, days }
+    });
+    return response.data;
+  },
+
+  // Refresh weather data
+  async refresh(data: { latitude: number; longitude: number }) {
+    const response = await api.post('/weather/refresh/', data);
+    return response.data;
+  },
+};
+
 export default api;

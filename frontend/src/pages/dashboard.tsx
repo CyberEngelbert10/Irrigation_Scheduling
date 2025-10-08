@@ -1,30 +1,42 @@
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import AuthGuard from '@/components/auth/AuthGuard';
-import Link from 'next/link';
+import Navigation from '@/components/Navigation';
+import { weatherAPI } from '@/lib/api';
+import { WeatherData, getWeatherEmoji, formatTemperature } from '@/types/weather';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
+  const [currentWeather, setCurrentWeather] = useState<WeatherData | null>(null);
+  const [weatherLoading, setWeatherLoading] = useState(true);
+
+  // Default location (Lusaka, Zambia)
+  const defaultLocation = {
+    latitude: -15.3875,
+    longitude: 28.3228,
+    location_name: 'Lusaka, Zambia'
+  };
+
+  useEffect(() => {
+    loadWeatherData();
+  }, []);
+
+  const loadWeatherData = async () => {
+    try {
+      setWeatherLoading(true);
+      const weatherData = await weatherAPI.getCurrent(defaultLocation);
+      setCurrentWeather(weatherData);
+    } catch (err) {
+      console.error('Failed to load weather data:', err);
+    } finally {
+      setWeatherLoading(false);
+    }
+  };
 
   return (
     <AuthGuard>
       <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-primary-700">🌱 Smart Irrigation</h1>
-            <div className="flex items-center gap-4">
-              <Link href="/profile" className="text-gray-700 hover:text-primary-600">
-                {user?.name}
-              </Link>
-              <button
-                onClick={logout}
-                className="px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </header>
+        <Navigation currentPage="dashboard" />
 
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-4 py-8">
@@ -54,16 +66,45 @@ export default function Dashboard() {
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {/* Weather Card */}
-            <div className="card">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <p className="text-gray-600 text-sm mb-1">CURRENT WEATHER</p>
-                  <h3 className="text-2xl font-bold text-gray-900">28°C</h3>
+            <div className="card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => window.location.href = '/weather'}>
+              {weatherLoading ? (
+                <div className="flex items-center justify-center h-24">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
                 </div>
-                <div className="text-4xl">☀️</div>
-              </div>
-              <p className="text-gray-600 text-sm">Sunny, Low humidity</p>
-              <p className="text-primary-600 text-sm font-medium mt-2">Perfect irrigation weather</p>
+              ) : currentWeather ? (
+                <>
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <p className="text-gray-600 text-sm mb-1">CURRENT WEATHER</p>
+                      <h3 className="text-2xl font-bold text-gray-900">
+                        {formatTemperature(currentWeather.temperature)}
+                      </h3>
+                    </div>
+                    <div className="text-4xl">{getWeatherEmoji(currentWeather.weather_icon)}</div>
+                  </div>
+                  <p className="text-gray-600 text-sm capitalize">{currentWeather.weather_description}</p>
+                  <p className="text-gray-500 text-xs mt-1">
+                    Humidity: {currentWeather.humidity}% • Wind: {currentWeather.wind_speed} m/s
+                  </p>
+                  <p className="text-primary-600 text-sm font-medium mt-2 hover:text-primary-700">
+                    View detailed forecast →
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <p className="text-gray-600 text-sm mb-1">CURRENT WEATHER</p>
+                      <h3 className="text-2xl font-bold text-gray-900">--°C</h3>
+                    </div>
+                    <div className="text-4xl">🌤️</div>
+                  </div>
+                  <p className="text-gray-600 text-sm">Unable to load weather</p>
+                  <p className="text-primary-600 text-sm font-medium mt-2 hover:text-primary-700">
+                    View detailed forecast →
+                  </p>
+                </>
+              )}
             </div>
 
             {/* Fields Card */}

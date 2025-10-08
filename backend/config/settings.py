@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     # Local apps
     'apps.authentication',
     'apps.fields',
+    'weather_integration',
 ]
 
 MIDDLEWARE = [
