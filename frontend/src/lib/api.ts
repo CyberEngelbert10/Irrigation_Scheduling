@@ -166,4 +166,153 @@ export const weatherAPI = {
   },
 };
 
-export default api;
+// Predictions API
+export const predictionsAPI = {
+  // Generate irrigation schedule for a field
+  async generateSchedule(fieldId: number) {
+    const response = await api.post('/predictions/schedules/generate/', {
+      field_id: fieldId,
+    });
+    return response.data;
+  },
+
+  // Get all irrigation schedules
+  async getSchedules(params?: {
+    status?: string;
+    field?: number;
+    limit?: number;
+    offset?: number;
+  }) {
+    const response = await api.get('/predictions/schedules/', { params });
+    return response.data;
+  },
+
+  // Get pending schedules
+  async getPendingSchedules() {
+    const response = await api.get('/predictions/schedules/pending/');
+    return response.data;
+  },
+
+  // Get overdue schedules
+  async getOverdueSchedules() {
+    const response = await api.get('/predictions/schedules/overdue/');
+    return response.data;
+  },
+
+  // Get schedule by ID
+  async getSchedule(id: number) {
+    const response = await api.get(`/predictions/schedules/${id}/`);
+    return response.data;
+  },
+
+  // Update schedule status
+  async updateSchedule(id: number, data: { status: string }) {
+    const response = await api.patch(`/predictions/schedules/${id}/`, data);
+    return response.data;
+  },
+
+  // Confirm schedule
+  async confirmSchedule(id: number) {
+    const response = await api.post(`/predictions/schedules/${id}/confirm/`);
+    return response.data;
+  },
+
+  // Skip schedule
+  async skipSchedule(id: number) {
+    const response = await api.post(`/predictions/schedules/${id}/skip/`);
+    return response.data;
+  },
+
+  // Get predictions for all user's fields
+  async getFieldPredictions() {
+    const response = await api.get('/predictions/predict/field_predictions/');
+    return response.data;
+  },
+
+  // Get prediction for specific field
+  async getFieldPrediction(fieldId: number) {
+    const response = await api.post('/predictions/predict/predict/', {
+      field_id: fieldId,
+    });
+    return response.data;
+  },
+
+  // Get irrigation history
+  async getHistory(params?: {
+    field_id?: number;
+    limit?: number;
+    offset?: number;
+  }) {
+    const response = await api.get('/predictions/history/', { params });
+    return response.data;
+  },
+
+  // Get recent history (last 30 days)
+  async getRecentHistory() {
+    const response = await api.get('/predictions/history/recent/');
+    return response.data;
+  },
+
+  // Create irrigation history record
+  async createHistory(data: any) {
+    const response = await api.post('/predictions/history/', data);
+    return response.data;
+  },
+
+  // Get history by ID
+  async getHistoryById(id: number) {
+    const response = await api.get(`/predictions/history/${id}/`);
+    return response.data;
+  },
+
+  // Update history record
+  async updateHistory(id: number, data: any) {
+    const response = await api.patch(`/predictions/history/${id}/`, data);
+    return response.data;
+  },
+};
+
+// Analytics API
+export const analyticsAPI = {
+  // Get water usage statistics
+  async getWaterUsageStats(params?: { days?: number }) {
+    const response = await api.get('/analytics/stats/', { params });
+    return response.data;
+  },
+
+  // Get field-specific analytics
+  async getFieldAnalytics(fieldId: number, params?: { days?: number }) {
+    const response = await api.get(`/analytics/field/${fieldId}/`, { params });
+    return response.data;
+  },
+
+  // Get irrigation efficiency report
+  async getEfficiencyReport(params?: { days?: number }) {
+    const response = await api.get('/analytics/efficiency/', { params });
+    return response.data;
+  },
+};
+
+// Settings API
+export const settingsAPI = {
+  // Get user preferences
+  async getPreferences() {
+    const response = await api.get('/settings/preferences/');
+    return response.data;
+  },
+
+  // Update user preferences
+  async updatePreferences(data: any) {
+    const response = await api.patch('/settings/preferences/', data);
+    return response.data;
+  },
+
+  // Reset preferences to defaults
+  async resetPreferences() {
+    const response = await api.post('/settings/preferences/reset/');
+    return response.data;
+  },
+};
+
+// Export the axios instance for direct use
+export { api };

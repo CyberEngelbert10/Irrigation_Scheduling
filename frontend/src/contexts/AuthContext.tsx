@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/router';
 import Cookies from 'js-cookie';
-import api from '@/lib/api';
+import { api } from '@/lib/api';
 import { User, LoginCredentials, RegisterData, AuthResponse } from '@/types/auth';
 
 interface AuthContextType {

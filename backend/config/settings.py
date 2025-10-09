@@ -39,6 +39,9 @@ INSTALLED_APPS = [
     'apps.authentication',
     'apps.fields',
     'weather_integration',
+    'predictions',
+    'analytics',
+    'settings',
 ]
 
 MIDDLEWARE = [

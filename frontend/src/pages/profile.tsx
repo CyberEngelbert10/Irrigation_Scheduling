@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import AuthGuard from '@/components/auth/AuthGuard';
-import api from '@/lib/api';
+import { api } from '@/lib/api';
 import { ChangePasswordData } from '@/types/auth';
 
 export default function Profile() {

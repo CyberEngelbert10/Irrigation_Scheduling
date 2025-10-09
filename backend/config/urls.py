@@ -10,4 +10,7 @@ urlpatterns = [
     path('api/auth/', include('apps.authentication.urls')),
     path('api/fields/', include('apps.fields.urls')),
     path('api/weather/', include('weather_integration.urls')),
+    path('api/predictions/', include('predictions.urls')),
+    path('api/analytics/', include('analytics.urls')),
+    path('api/settings/', include('settings.urls')),
 ]
