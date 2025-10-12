@@ -8,7 +8,8 @@ from django.contrib.auth import get_user_model
 from .serializers import (
     UserSerializer,
     RegisterSerializer,
-    ChangePasswordSerializer
+    ChangePasswordSerializer,
+    CustomTokenObtainPairSerializer
 )
 
 User = get_user_model()
@@ -40,6 +41,7 @@ class LoginView(TokenObtainPairView):
     Login and obtain JWT tokens.
     """
     permission_classes = [AllowAny]
+    serializer_class = CustomTokenObtainPairSerializer
 
 
 class UserDetailView(generics.RetrieveUpdateAPIView):
