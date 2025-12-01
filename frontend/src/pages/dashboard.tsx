@@ -6,6 +6,7 @@ import { weatherAPI, predictionsAPI, fieldAPI, analyticsAPI } from '@/lib/api';
 import { WeatherData, getWeatherEmoji, formatTemperature } from '@/types/weather';
 import { Field } from '@/types/field';
 import { IrrigationSchedule, FieldPrediction, WaterUsageStats } from '@/types/predictions';
+import { toast } from 'react-hot-toast';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -19,6 +20,8 @@ export default function Dashboard() {
   const [schedulesLoading, setSchedulesLoading] = useState(true);
   const [analytics, setAnalytics] = useState<WaterUsageStats | null>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
+  const [generatingSchedules, setGeneratingSchedules] = useState(false);
+  const [generatingForField, setGeneratingForField] = useState<number | null>(null);
 
   // Default location (Lusaka, Zambia)
   const defaultLocation = {
@@ -101,6 +104,76 @@ export default function Dashboard() {
     }
   };
 
+  // Generate schedules for all fields with predictions
+  const generateAllSchedules = async () => {
+    if (predictions.length === 0) {
+      toast.error('No predictions available to generate schedules');
+      return;
+    }
+
+    setGeneratingSchedules(true);
+    let successCount = 0;
+    let errorCount = 0;
+
+    try {
+      for (const prediction of predictions) {
+        try {
+          await predictionsAPI.generateSchedule(prediction.field_id);
+          successCount++;
+        } catch (err) {
+          console.error(`Failed to generate schedule for field ${prediction.field_name}:`, err);
+          errorCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`Generated ${successCount} irrigation schedule${successCount > 1 ? 's' : ''}`);
+        // Reload schedules to show new ones
+        await loadPendingSchedules();
+        // Reload predictions (they might change after schedule generation)
+        await loadPredictions();
+      }
+
+      if (errorCount > 0) {
+        toast.error(`Failed to generate ${errorCount} schedule${errorCount > 1 ? 's' : ''}`);
+      }
+    } catch (err) {
+      console.error('Failed to generate schedules:', err);
+      toast.error('Failed to generate schedules');
+    } finally {
+      setGeneratingSchedules(false);
+    }
+  };
+
+  // Generate schedule for a single field
+  const generateScheduleForField = async (fieldId: number, fieldName: string) => {
+    setGeneratingForField(fieldId);
+
+    try {
+      await predictionsAPI.generateSchedule(fieldId);
+      toast.success(`Schedule generated for ${fieldName}`);
+      // Reload schedules and predictions
+      await Promise.all([loadPendingSchedules(), loadPredictions()]);
+    } catch (err: any) {
+      console.error(`Failed to generate schedule for ${fieldName}:`, err);
+      toast.error(err.response?.data?.error || `Failed to generate schedule for ${fieldName}`);
+    } finally {
+      setGeneratingForField(null);
+    }
+  };
+
+  // Confirm a pending schedule
+  const confirmSchedule = async (scheduleId: number) => {
+    try {
+      await predictionsAPI.confirmSchedule(scheduleId);
+      toast.success('Schedule confirmed');
+      await loadPendingSchedules();
+    } catch (err) {
+      console.error('Failed to confirm schedule:', err);
+      toast.error('Failed to confirm schedule');
+    }
+  };
+
   return (
     <AuthGuard>
       <div className="min-h-screen bg-gray-50">
@@ -137,10 +210,16 @@ export default function Dashboard() {
                       {pendingSchedules[0].predicted_water_amount}L predicted • {Math.round(parseFloat(pendingSchedules[0].confidence_score) * 100)}% confidence
                     </p>
                     <div className="flex gap-3">
-                      <button className="bg-white text-primary-600 px-4 py-2 rounded-lg font-semibold hover:bg-primary-50 transition-colors text-sm">
+                      <button 
+                        onClick={() => window.location.href = `/fields/${pendingSchedules[0].field}`}
+                        className="bg-white text-primary-600 px-4 py-2 rounded-lg font-semibold hover:bg-primary-50 transition-colors text-sm"
+                      >
                         View Details
                       </button>
-                      <button className="bg-primary-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-300 transition-colors text-sm">
+                      <button 
+                        onClick={() => confirmSchedule(pendingSchedules[0].id)}
+                        className="bg-primary-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-300 transition-colors text-sm"
+                      >
                         Confirm Schedule
                       </button>
                     </div>
@@ -155,8 +234,19 @@ export default function Dashboard() {
                     <p className="text-primary-50 mb-6">
                       Get personalized irrigation schedules based on weather and crop data
                     </p>
-                    <button className="bg-white text-primary-600 px-6 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors">
-                      Generate Schedules
+                    <button 
+                      onClick={generateAllSchedules}
+                      disabled={generatingSchedules}
+                      className="bg-white text-primary-600 px-6 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      {generatingSchedules ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600"></div>
+                          Generating...
+                        </>
+                      ) : (
+                        'Generate Schedules'
+                      )}
                     </button>
                   </>
                 ) : (
@@ -166,7 +256,10 @@ export default function Dashboard() {
                     <p className="text-primary-50 mb-6">
                       Add fields and get AI-powered irrigation recommendations
                     </p>
-                    <button className="bg-white text-primary-600 px-6 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors">
+                    <button 
+                      onClick={() => window.location.href = '/fields/add'}
+                      className="bg-white text-primary-600 px-6 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors"
+                    >
                       Add Your First Field
                     </button>
                   </>
@@ -330,10 +423,24 @@ export default function Dashboard() {
                           <p className="text-sm text-gray-600 mb-3">{prediction.reason}</p>
 
                           <div className="flex gap-2">
-                            <button className="text-primary-600 text-sm font-medium hover:text-primary-700">
-                              Generate Schedule
+                            <button 
+                              onClick={() => generateScheduleForField(prediction.field_id, prediction.field_name)}
+                              disabled={generatingForField === prediction.field_id}
+                              className="text-primary-600 text-sm font-medium hover:text-primary-700 disabled:opacity-50 flex items-center gap-1"
+                            >
+                              {generatingForField === prediction.field_id ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary-600"></div>
+                                  Generating...
+                                </>
+                              ) : (
+                                'Generate Schedule'
+                              )}
                             </button>
-                            <button className="text-gray-500 text-sm hover:text-gray-700">
+                            <button 
+                              onClick={() => window.location.href = `/fields/${prediction.field_id}`}
+                              className="text-gray-500 text-sm hover:text-gray-700"
+                            >
                               View Details
                             </button>
                           </div>
@@ -413,7 +520,10 @@ export default function Dashboard() {
           <div className="card">
             <h3 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <button className="p-4 border-2 border-gray-200 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-all text-left">
+              <button 
+                onClick={() => window.location.href = '/fields/add'}
+                className="p-4 border-2 border-gray-200 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-all text-left"
+              >
                 <div className="text-2xl mb-2">🌾</div>
                 <h4 className="font-semibold text-gray-900 mb-1">Add New Field</h4>
                 <p className="text-sm text-gray-600">Register a new field for irrigation scheduling</p>
