@@ -88,17 +88,18 @@ class IrrigationPredictionService:
         """
         try:
             weather_service = WeatherService()
-            weather_data = weather_service.get_current_weather(
+            weather_obj = weather_service.get_current_weather(
                 latitude=field.latitude,
                 longitude=field.longitude
             )
 
-            if weather_data:
+            if weather_obj:
+                # Convert model instance to dict with numeric values
                 return {
-                    'temperature': weather_data.get('temperature', 25.0),
-                    'humidity': weather_data.get('humidity', 60.0),
-                    'rainfall': weather_data.get('rainfall', 0.0),
-                    'windspeed': weather_data.get('wind_speed', 5.0)
+                    'temperature': float(weather_obj.temperature) if weather_obj.temperature else 25.0,
+                    'humidity': float(weather_obj.humidity) if weather_obj.humidity else 60.0,
+                    'rainfall': float(weather_obj.rainfall_1h) if weather_obj.rainfall_1h else 0.0,
+                    'windspeed': float(weather_obj.wind_speed) if weather_obj.wind_speed else 5.0
                 }
         except Exception as e:
             logger.warning(f"Failed to get weather data: {str(e)}")
@@ -242,6 +243,7 @@ class IrrigationPredictionService:
     def generate_irrigation_schedule(self, field: Field, user) -> IrrigationSchedule:
         """
         Generate a complete irrigation schedule for a field using AI prediction.
+        If a schedule already exists for the same field/date/time, update it instead.
         """
         # Get AI prediction
         predicted_amount, confidence, input_data = self.predict_irrigation_need(field)
@@ -258,26 +260,30 @@ class IrrigationPredictionService:
             field, predicted_amount, field.current_soil_moisture, weather_data
         )
 
-        # Create schedule
-        schedule = IrrigationSchedule.objects.create(
+        # Try to get existing schedule or create new one
+        schedule, created = IrrigationSchedule.objects.update_or_create(
             field=field,
-            user=user,
-            predicted_water_amount=predicted_amount,
-            confidence_score=confidence,
-            irrigation_reason=reason,
             recommended_date=recommended_date,
             recommended_time=recommended_time,
-            priority_level=priority,
-            model_input_data=input_data,
-            model_prediction_details={
-                'predicted_amount': predicted_amount,
+            defaults={
+                'user': user,
+                'predicted_water_amount': predicted_amount,
                 'confidence_score': confidence,
-                'weather_data': weather_data,
-                'model_features': self.FEATURE_NAMES
+                'irrigation_reason': reason,
+                'priority_level': priority,
+                'status': 'pending',  # Reset status when regenerating
+                'model_input_data': input_data,
+                'model_prediction_details': {
+                    'predicted_amount': predicted_amount,
+                    'confidence_score': confidence,
+                    'weather_data': weather_data,
+                    'model_features': self.FEATURE_NAMES
+                }
             }
         )
 
-        logger.info(f"Generated irrigation schedule for field {field.name}: {predicted_amount}L")
+        action = "Created" if created else "Updated"
+        logger.info(f"{action} irrigation schedule for field {field.name}: {predicted_amount}L")
         return schedule
 
     def get_prediction_for_field(self, field: Field) -> Dict[str, Any]:
