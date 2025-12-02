@@ -11,6 +11,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
   const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: '📊' },
     { href: '/fields', label: 'Fields', icon: '🌾' },
+    { href: '/schedules', label: 'Schedules', icon: '📅' },
     { href: '/history', label: 'History', icon: '📚' },
     { href: '/weather', label: 'Weather', icon: '🌤️' },
     { href: '/settings', label: 'Settings', icon: '⚙️' },

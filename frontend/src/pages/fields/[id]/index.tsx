@@ -3,6 +3,8 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { fieldAPI } from '@/lib/api';
 import { Field } from '@/types/field';
+import Navigation from '@/components/Navigation';
+import AuthGuard from '@/components/auth/AuthGuard';
 
 export default function FieldDetailPage() {
   const router = useRouter();
@@ -66,63 +68,74 @@ export default function FieldDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
-          <p className="mt-4 text-gray-600">Loading field details...</p>
+      <AuthGuard>
+        <div className="min-h-screen bg-gray-50">
+          <Navigation currentPage="fields" />
+          <div className="flex items-center justify-center py-24">
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+              <p className="mt-4 text-gray-600">Loading field details...</p>
+            </div>
+          </div>
         </div>
-      </div>
+      </AuthGuard>
     );
   }
 
   if (error || !field) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-red-50 border border-red-200 rounded-md p-4">
-            <p className="text-sm text-red-800">{error || 'Field not found'}</p>
-          </div>
-          <div className="mt-4">
-            <Link href="/fields" className="text-green-600 hover:text-green-700">
-              ← Back to Fields
-            </Link>
+      <AuthGuard>
+        <div className="min-h-screen bg-gray-50">
+          <Navigation currentPage="fields" />
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="bg-red-50 border border-red-200 rounded-md p-4">
+              <p className="text-sm text-red-800">{error || 'Field not found'}</p>
+            </div>
+            <div className="mt-4">
+              <Link href="/fields" className="text-green-600 hover:text-green-700">
+                ← Back to Fields
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
+      </AuthGuard>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Breadcrumb */}
-        <nav className="flex mb-8" aria-label="Breadcrumb">
-          <ol className="flex items-center space-x-4">
-            <li>
-              <Link href="/fields" className="text-gray-400 hover:text-gray-500">
-                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-                </svg>
-                <span className="sr-only">Home</span>
-              </Link>
-            </li>
-            <li>
-              <div className="flex items-center">
-                <svg className="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                </svg>
-                <Link href="/fields" className="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">
-                  Fields
+    <AuthGuard>
+      <div className="min-h-screen bg-gray-50">
+        <Navigation currentPage="fields" />
+        
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Breadcrumb */}
+          <nav className="flex mb-8" aria-label="Breadcrumb">
+            <ol className="flex items-center space-x-4">
+              <li>
+                <Link href="/dashboard" className="text-gray-400 hover:text-gray-500">
+                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                  </svg>
+                  <span className="sr-only">Dashboard</span>
                 </Link>
-              </div>
-            </li>
-            <li>
-              <div className="flex items-center">
-                <svg className="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                </svg>
-                <span className="ml-4 text-sm font-medium text-gray-500">{field.name}</span>
-              </div>
+              </li>
+              <li>
+                <div className="flex items-center">
+                  <svg className="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                  </svg>
+                  <Link href="/fields" className="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">
+                    Fields
+                  </Link>
+                </div>
+              </li>
+              <li>
+                <div className="flex items-center">
+                  <svg className="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                  </svg>
+                  <span className="ml-4 text-sm font-medium text-gray-500">{field.name}</span>
+                </div>
             </li>
           </ol>
         </nav>
@@ -199,7 +212,7 @@ export default function FieldDetailPage() {
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Coordinates</dt>
                   <dd className="mt-1 text-sm text-gray-900">
-                    {field.latitude.toFixed(6)}, {field.longitude.toFixed(6)}
+                    {parseFloat(String(field.latitude)).toFixed(6)}, {parseFloat(String(field.longitude)).toFixed(6)}
                   </dd>
                 </div>
               )}
@@ -399,7 +412,8 @@ export default function FieldDetailPage() {
             </div>
           </div>
         )}
+        </main>
       </div>
-    </div>
+    </AuthGuard>
   );
 }

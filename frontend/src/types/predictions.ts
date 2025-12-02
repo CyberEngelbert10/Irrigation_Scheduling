@@ -141,7 +141,10 @@ export interface EfficiencyReport {
 export interface FieldPrediction {
   field_id: number;
   field_name: string;
-  predicted_water_amount: number;
+  predicted_water_amount: number;  // L/m² (liters per square meter)
+  predicted_water_unit?: string;   // "L/m²"
+  total_water_liters?: number;     // Total liters for entire field
+  total_water_m3?: number;         // Total cubic meters for entire field
   confidence_score: number;
   input_data: any;
   weather_data: {
@@ -152,6 +155,21 @@ export interface FieldPrediction {
   };
   priority: 'low' | 'medium' | 'high' | 'critical';
   reason: string;
+  // User-friendly descriptions
+  priority_description?: string;
+  water_amount_explanation?: string;
+  weather_summary?: string;
+  // Field context
+  field_info?: {
+    crop_type: string;
+    crop_days: number;
+    soil_moisture: number;
+    soil_type: string;
+    region: string;
+    season: string;
+    area_hectares?: number;
+    area_m2?: number;
+  };
 }
 
 export interface ScheduleCreateData {

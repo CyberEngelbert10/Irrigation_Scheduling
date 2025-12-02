@@ -3,13 +3,53 @@ import { useAuth } from '@/contexts/AuthContext';
 import AuthGuard from '@/components/auth/AuthGuard';
 import Navigation from '@/components/Navigation';
 import { weatherAPI, predictionsAPI, fieldAPI, analyticsAPI } from '@/lib/api';
-import { WeatherData, getWeatherEmoji, formatTemperature } from '@/types/weather';
+import { WeatherData, formatTemperature } from '@/types/weather';
 import { Field } from '@/types/field';
 import { IrrigationSchedule, FieldPrediction, WaterUsageStats } from '@/types/predictions';
 import { toast } from 'react-hot-toast';
 
+// Icons as simple SVG components for better performance
+const DropletIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
+  </svg>
+);
+
+const ThermometerIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" />
+  </svg>
+);
+
+const ShieldCheckIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    <path d="M9 12l2 2 4-4" />
+  </svg>
+);
+
+const CloudRainIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25" />
+    <path d="M8 19v2M8 13v2M16 19v2M16 13v2M12 21v2M12 15v2" />
+  </svg>
+);
+
+const ChevronDownIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 9l6 6 6-6" />
+  </svg>
+);
+
+const MapPinIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+    <circle cx="12" cy="10" r="3" />
+  </svg>
+);
+
 export default function Dashboard() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [currentWeather, setCurrentWeather] = useState<WeatherData | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(true);
   const [fields, setFields] = useState<Field[]>([]);
@@ -184,194 +224,183 @@ export default function Dashboard() {
           {/* Welcome Section */}
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Welcome back, {user?.name?.split(' ')[0]}! 👋
+              Welcome back, {user?.name?.split(' ')[0]}!
             </h2>
-            <p className="text-gray-600">Here's your irrigation overview for today</p>
+            <p className="text-lg text-gray-600">Here is your irrigation overview for today</p>
           </div>
 
           {/* Hero Card - Next Watering */}
-          <div className="card bg-gradient-to-br from-primary-500 to-primary-600 text-white mb-8">
-            <div className="flex items-start justify-between">
-              <div>
-                {pendingSchedules.length > 0 ? (
-                  <>
-                    <p className="text-primary-100 text-sm mb-2">NEXT IRRIGATION SCHEDULED</p>
-                    <h3 className="text-3xl font-bold mb-3">
-                      {new Date(pendingSchedules[0].recommended_date).toLocaleDateString('en-US', {
-                        weekday: 'long',
-                        month: 'short',
-                        day: 'numeric'
-                      })}
-                    </h3>
-                    <p className="text-primary-50 mb-2">
-                      {pendingSchedules[0].recommended_time.slice(0, 5)} • {pendingSchedules[0].field_name}
-                    </p>
-                    <p className="text-primary-50 mb-6">
-                      {pendingSchedules[0].predicted_water_amount}L predicted • {Math.round(parseFloat(pendingSchedules[0].confidence_score) * 100)}% confidence
-                    </p>
-                    <div className="flex gap-3">
-                      <button 
-                        onClick={() => window.location.href = `/fields/${pendingSchedules[0].field}`}
-                        className="bg-white text-primary-600 px-4 py-2 rounded-lg font-semibold hover:bg-primary-50 transition-colors text-sm"
-                      >
-                        View Details
-                      </button>
-                      <button 
-                        onClick={() => confirmSchedule(pendingSchedules[0].id)}
-                        className="bg-primary-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-300 transition-colors text-sm"
-                      >
-                        Confirm Schedule
-                      </button>
-                    </div>
-                  </>
-                ) : predictions.length > 0 ? (
-                  <>
-                    <p className="text-primary-100 text-sm mb-2">AI IRRIGATION RECOMMENDATION</p>
-                    <h3 className="text-3xl font-bold mb-3">Ready to Schedule</h3>
-                    <p className="text-primary-50 mb-2">
-                      {predictions.length} field{predictions.length > 1 ? 's' : ''} with AI recommendations
-                    </p>
-                    <p className="text-primary-50 mb-6">
-                      Get personalized irrigation schedules based on weather and crop data
-                    </p>
+          <div className="bg-white rounded-xl shadow-lg border-2 border-primary-200 mb-8 overflow-hidden">
+            <div className="bg-primary-600 text-white px-6 py-4">
+              <p className="text-lg font-medium">
+                {pendingSchedules.length > 0 ? 'Next Scheduled Irrigation' :
+                 predictions.length > 0 ? 'AI Recommendations Ready' :
+                 'Get Started'}
+              </p>
+            </div>
+            <div className="p-6">
+              {pendingSchedules.length > 0 ? (
+                <>
+                  <h3 className="text-3xl font-bold text-gray-900 mb-3">
+                    {new Date(pendingSchedules[0].recommended_date).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </h3>
+                  <div className="text-xl text-gray-700 mb-2">
+                    <span className="font-medium">Time:</span> {pendingSchedules[0].recommended_time.slice(0, 5)}
+                  </div>
+                  <div className="text-xl text-gray-700 mb-2">
+                    <span className="font-medium">Field:</span> {pendingSchedules[0].field_name}
+                  </div>
+                  <div className="text-xl text-gray-700 mb-6">
+                    <span className="font-medium">Water amount:</span> {pendingSchedules[0].predicted_water_amount} L/m²
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <button 
-                      onClick={generateAllSchedules}
-                      disabled={generatingSchedules}
-                      className="bg-white text-primary-600 px-6 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      onClick={() => window.location.href = `/fields/${pendingSchedules[0].field}`}
+                      className="py-3 px-6 bg-gray-200 text-gray-800 rounded-lg text-lg font-medium hover:bg-gray-300 transition-colors"
                     >
-                      {generatingSchedules ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600"></div>
-                          Generating...
-                        </>
-                      ) : (
-                        'Generate Schedules'
-                      )}
+                      View Details
                     </button>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-primary-100 text-sm mb-2">GET STARTED WITH AI</p>
-                    <h3 className="text-3xl font-bold mb-3">Smart Irrigation</h3>
-                    <p className="text-primary-50 mb-6">
-                      Add fields and get AI-powered irrigation recommendations
-                    </p>
                     <button 
-                      onClick={() => window.location.href = '/fields/add'}
-                      className="bg-white text-primary-600 px-6 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors"
+                      onClick={() => confirmSchedule(pendingSchedules[0].id)}
+                      className="py-3 px-6 bg-green-600 text-white rounded-lg text-lg font-bold hover:bg-green-700 transition-colors"
                     >
-                      Add Your First Field
+                      Confirm This Schedule
                     </button>
-                  </>
-                )}
-              </div>
-              <div className="text-6xl">🤖</div>
+                  </div>
+                </>
+              ) : predictions.length > 0 ? (
+                <>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                    {predictions.length} field{predictions.length > 1 ? 's' : ''} ready for irrigation planning
+                  </h3>
+                  <p className="text-lg text-gray-600 mb-6">
+                    Our system has analyzed your fields based on current weather and soil conditions. 
+                    Review the recommendations below and create irrigation schedules.
+                  </p>
+                  <button 
+                    onClick={generateAllSchedules}
+                    disabled={generatingSchedules}
+                    className="w-full sm:w-auto py-4 px-8 bg-primary-600 text-white rounded-lg text-xl font-bold hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                  >
+                    {generatingSchedules ? (
+                      <>
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                        Creating Schedules...
+                      </>
+                    ) : (
+                      'Create All Schedules'
+                    )}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">Start Smart Irrigation</h3>
+                  <p className="text-lg text-gray-600 mb-6">
+                    Add your fields to get personalized irrigation recommendations based on weather, 
+                    soil conditions, and crop needs.
+                  </p>
+                  <button 
+                    onClick={() => window.location.href = '/fields/new'}
+                    className="w-full sm:w-auto py-4 px-8 bg-primary-600 text-white rounded-lg text-xl font-bold hover:bg-primary-700 transition-colors"
+                  >
+                    Add Your First Field
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {/* Weather Card */}
-            <div className="card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => window.location.href = '/weather'}>
+            <div className="bg-white rounded-xl shadow p-6 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => window.location.href = '/weather'}>
               {weatherLoading ? (
-                <div className="flex items-center justify-center h-24">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
+                <div className="flex items-center justify-center h-32">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
                 </div>
               ) : currentWeather ? (
                 <>
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <p className="text-gray-600 text-sm mb-1">CURRENT WEATHER</p>
-                      <h3 className="text-2xl font-bold text-gray-900">
-                        {formatTemperature(currentWeather.temperature)}
-                      </h3>
-                    </div>
-                    <div className="text-4xl">{getWeatherEmoji(currentWeather.weather_icon)}</div>
-                  </div>
-                  <p className="text-gray-600 text-sm capitalize">{currentWeather.weather_description}</p>
-                  <p className="text-gray-500 text-xs mt-1">
-                    Humidity: {currentWeather.humidity}% • Wind: {currentWeather.wind_speed} m/s
+                  <p className="text-base font-medium text-gray-500 uppercase tracking-wide mb-3">Current Weather</p>
+                  <h3 className="text-4xl font-bold text-gray-900 mb-2">
+                    {formatTemperature(currentWeather.temperature)}
+                  </h3>
+                  <p className="text-lg text-gray-700 capitalize mb-1">{currentWeather.weather_description}</p>
+                  <p className="text-base text-gray-600">
+                    Humidity: {currentWeather.humidity}%
                   </p>
-                  <p className="text-primary-600 text-sm font-medium mt-2 hover:text-primary-700">
-                    View detailed forecast →
+                  <p className="text-primary-600 text-base font-medium mt-4 hover:text-primary-700">
+                    View full forecast
                   </p>
                 </>
               ) : (
                 <>
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <p className="text-gray-600 text-sm mb-1">CURRENT WEATHER</p>
-                      <h3 className="text-2xl font-bold text-gray-900">--°C</h3>
-                    </div>
-                    <div className="text-4xl">🌤️</div>
-                  </div>
-                  <p className="text-gray-600 text-sm">Unable to load weather</p>
-                  <p className="text-primary-600 text-sm font-medium mt-2 hover:text-primary-700">
-                    View detailed forecast →
-                  </p>
+                  <p className="text-base font-medium text-gray-500 uppercase tracking-wide mb-3">Current Weather</p>
+                  <h3 className="text-4xl font-bold text-gray-900 mb-2">--°C</h3>
+                  <p className="text-lg text-gray-600">Unable to load weather</p>
                 </>
               )}
             </div>
 
             {/* Fields Card */}
-            <div className="card">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <p className="text-gray-600 text-sm mb-1">ACTIVE FIELDS</p>
-                  <h3 className="text-2xl font-bold text-gray-900">
-                    {fieldsLoading ? '...' : fields.length}
-                  </h3>
-                </div>
-                <div className="text-4xl">🌾</div>
-              </div>
+            <div className="bg-white rounded-xl shadow p-6">
+              <p className="text-base font-medium text-gray-500 uppercase tracking-wide mb-3">Your Fields</p>
+              <h3 className="text-4xl font-bold text-gray-900 mb-2">
+                {fieldsLoading ? '...' : fields.length}
+              </h3>
               {fieldsLoading ? (
-                <p className="text-gray-600 text-sm">Loading fields...</p>
+                <p className="text-lg text-gray-600">Loading...</p>
               ) : fields.length > 0 ? (
                 <>
-                  <p className="text-gray-600 text-sm mb-2">
-                    {fields.length} field{fields.length > 1 ? 's' : ''} ready for irrigation
+                  <p className="text-lg text-gray-700 mb-4">
+                    {fields.length} active field{fields.length > 1 ? 's' : ''}
                   </p>
                   <button
-                    className="text-primary-600 text-sm font-medium hover:text-primary-700"
+                    className="text-primary-600 text-base font-medium hover:text-primary-700"
                     onClick={() => window.location.href = '/fields'}
                   >
-                    Manage Fields →
+                    Manage Fields
                   </button>
                 </>
               ) : (
                 <>
-                  <p className="text-gray-600 text-sm mb-2">No fields added yet</p>
+                  <p className="text-lg text-gray-600 mb-4">No fields added yet</p>
                   <button
-                    className="text-primary-600 text-sm font-medium hover:text-primary-700"
-                    onClick={() => window.location.href = '/fields/add'}
+                    className="text-primary-600 text-base font-medium hover:text-primary-700"
+                    onClick={() => window.location.href = '/fields/new'}
                   >
-                    + Add Your First Field
+                    Add Your First Field
                   </button>
                 </>
               )}
             </div>
 
-            {/* Savings Card */}
-            <div className="card">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <p className="text-gray-600 text-sm mb-1">WATER SAVED</p>
-                  <h3 className="text-2xl font-bold text-gray-900">0L</h3>
-                </div>
-                <div className="text-4xl">💰</div>
-              </div>
-              <p className="text-gray-600 text-sm">This month</p>
-              <p className="text-green-600 text-sm font-medium mt-2">Start saving water today!</p>
+            {/* Water Usage Card */}
+            <div className="bg-white rounded-xl shadow p-6">
+              <p className="text-base font-medium text-gray-500 uppercase tracking-wide mb-3">Water This Month</p>
+              <h3 className="text-4xl font-bold text-gray-900 mb-2">
+                {analyticsLoading ? '...' : 
+                 analytics ? `${analytics.total_water_usage.toFixed(0)}L` : '0L'}
+              </h3>
+              <p className="text-lg text-gray-700 mb-2">Total used</p>
+              {analytics && analytics.average_daily_usage > 0 && (
+                <p className="text-base text-gray-600">
+                  Average: {analytics.average_daily_usage.toFixed(0)}L per day
+                </p>
+              )}
             </div>
           </div>
 
           {/* AI Recommendations Section */}
           {predictions.length > 0 && (
-            <div className="card mb-8">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-semibold text-gray-900">🤖 AI Irrigation Recommendations</h3>
-                <span className="text-sm text-gray-500">
-                  Updated {new Date().toLocaleTimeString('en-US', {
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-2xl font-bold text-gray-900">Irrigation Recommendations</h3>
+                <span className="text-base text-gray-600">
+                  Updated: {new Date().toLocaleTimeString('en-US', {
                     hour: '2-digit',
                     minute: '2-digit'
                   })}
@@ -379,174 +408,368 @@ export default function Dashboard() {
               </div>
 
               {predictionsLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-                  <span className="ml-3 text-gray-600">Analyzing your fields...</span>
+                <div className="flex items-center justify-center py-12 bg-white rounded-xl shadow">
+                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-600"></div>
+                  <span className="ml-4 text-lg text-gray-600">Analyzing your fields...</span>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {predictions.map((prediction, index) => (
-                    <div key={prediction.field_id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h4 className="font-semibold text-gray-900">{prediction.field_name}</h4>
-                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              prediction.priority === 'critical' ? 'bg-red-100 text-red-800' :
-                              prediction.priority === 'high' ? 'bg-orange-100 text-orange-800' :
-                              prediction.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-green-100 text-green-800'
-                            }`}>
-                              {prediction.priority.toUpperCase()}
-                            </span>
+                <div className="space-y-6">
+                  {predictions.map((prediction) => {
+                    const priorityConfig = {
+                      critical: { 
+                        bg: 'bg-red-50', 
+                        border: 'border-red-200',
+                        gradient: 'from-red-500 to-red-600',
+                        badge: 'bg-red-100 text-red-800 border-red-200',
+                        button: 'bg-red-600 hover:bg-red-700',
+                        emoji: '🔴',
+                        label: 'URGENT - Water Now'
+                      },
+                      high: { 
+                        bg: 'bg-orange-50', 
+                        border: 'border-orange-200',
+                        gradient: 'from-orange-500 to-orange-600',
+                        badge: 'bg-orange-100 text-orange-800 border-orange-200',
+                        button: 'bg-orange-500 hover:bg-orange-600',
+                        emoji: '🟠',
+                        label: 'HIGH - Water Soon'
+                      },
+                      medium: { 
+                        bg: 'bg-yellow-50', 
+                        border: 'border-yellow-200',
+                        gradient: 'from-yellow-500 to-yellow-600',
+                        badge: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+                        button: 'bg-yellow-500 hover:bg-yellow-600',
+                        emoji: '🟡',
+                        label: 'MEDIUM - Schedule Water'
+                      },
+                      low: { 
+                        bg: 'bg-green-50', 
+                        border: 'border-green-200',
+                        gradient: 'from-green-500 to-emerald-600',
+                        badge: 'bg-green-100 text-green-800 border-green-200',
+                        button: 'bg-green-600 hover:bg-green-700',
+                        emoji: '🟢',
+                        label: 'LOW - No Rush'
+                      }
+                    };
+                    const config = priorityConfig[prediction.priority as keyof typeof priorityConfig] || priorityConfig.low;
+                    
+                    const totalWaterDisplay = prediction.total_water_liters 
+                      ? prediction.total_water_liters >= 1000 
+                        ? `${(prediction.total_water_liters/1000).toFixed(1)} m³`
+                        : `${prediction.total_water_liters.toFixed(0)} L`
+                      : null;
+
+                    const tempDescription = prediction.weather_data.temperature > 30 ? 'Hot' :
+                      prediction.weather_data.temperature > 25 ? 'Warm' :
+                      prediction.weather_data.temperature > 18 ? 'Pleasant' : 'Cool';
+
+                    const humidityDescription = prediction.weather_data.humidity > 80 ? 'Very humid' :
+                      prediction.weather_data.humidity > 60 ? 'Humid' :
+                      prediction.weather_data.humidity > 40 ? 'Moderate' : 'Dry';
+
+                    return (
+                      <div key={prediction.field_id}>
+                        {/* Desktop Card - Clean Dashboard Design */}
+                        <div className="hidden md:block border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                          {/* Header */}
+                          <div className={`bg-gradient-to-r ${config.bg} px-6 py-4 border-b ${config.border}`}>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <h2 className="text-xl font-bold text-gray-900">{prediction.field_name}</h2>
+                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${config.badge} border`}>
+                                  {config.emoji} {config.label}
+                                </span>
+                              </div>
+                              <div className="text-sm text-gray-600">
+                                Updated: {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                            </div>
                           </div>
 
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
-                            <div>
-                              <p className="text-xs text-gray-500">Water Needed</p>
-                              <p className="font-semibold text-gray-900">{prediction.predicted_water_amount.toFixed(1)}L</p>
+                          {/* Main Insight */}
+                          <div className="px-6 py-5 bg-white">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                              {prediction.priority_description || `${prediction.field_name} needs attention`}
+                            </h3>
+                            {prediction.water_amount_explanation && (
+                              <p className="text-gray-600">{prediction.water_amount_explanation}</p>
+                            )}
+                          </div>
+
+                          {/* Metrics Grid */}
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 px-6 py-5 bg-gray-50">
+                            {/* Water */}
+                            <div className="bg-white p-4 rounded-lg border border-gray-200">
+                              <div className="flex items-center gap-2 mb-2">
+                                <DropletIcon className="w-4 h-4 text-blue-500" />
+                                <span className="text-xs font-medium text-gray-600">Water Needed</span>
+                              </div>
+                              <div className="text-xl font-bold text-gray-900">{prediction.predicted_water_amount.toFixed(1)} L/m²</div>
+                              {totalWaterDisplay && (
+                                <div className="text-xs text-gray-500 mt-1">Total: {totalWaterDisplay}</div>
+                              )}
                             </div>
-                            <div>
-                              <p className="text-xs text-gray-500">Confidence</p>
-                              <p className="font-semibold text-gray-900">{Math.round(prediction.confidence_score * 100)}%</p>
+
+                            {/* Confidence */}
+                            <div className="bg-white p-4 rounded-lg border border-gray-200">
+                              <div className="flex items-center gap-2 mb-2">
+                                <ShieldCheckIcon className="w-4 h-4 text-green-500" />
+                                <span className="text-xs font-medium text-gray-600">Confidence</span>
+                              </div>
+                              <div className="text-xl font-bold text-gray-900">{Math.round(prediction.confidence_score * 100)}%</div>
+                              <div className="text-xs text-gray-500 mt-1">
+                                {prediction.confidence_score >= 0.8 ? 'High accuracy' :
+                                 prediction.confidence_score >= 0.6 ? 'Moderate' : 'Low accuracy'}
+                              </div>
                             </div>
-                            <div>
-                              <p className="text-xs text-gray-500">Temperature</p>
-                              <p className="font-semibold text-gray-900">{prediction.weather_data.temperature}°C</p>
+
+                            {/* Temp */}
+                            <div className="bg-white p-4 rounded-lg border border-gray-200">
+                              <div className="flex items-center gap-2 mb-2">
+                                <ThermometerIcon className="w-4 h-4 text-orange-500" />
+                                <span className="text-xs font-medium text-gray-600">Temp</span>
+                              </div>
+                              <div className="text-xl font-bold text-gray-900">{prediction.weather_data.temperature}°C</div>
+                              <div className="text-xs text-gray-500 mt-1">{tempDescription}</div>
                             </div>
-                            <div>
-                              <p className="text-xs text-gray-500">Humidity</p>
-                              <p className="font-semibold text-gray-900">{prediction.weather_data.humidity}%</p>
+
+                            {/* Air Humidity */}
+                            <div className="bg-white p-4 rounded-lg border border-gray-200">
+                              <div className="flex items-center gap-2 mb-2">
+                                <CloudRainIcon className="w-4 h-4 text-cyan-500" />
+                                <span className="text-xs font-medium text-gray-600">Air Humidity</span>
+                              </div>
+                              <div className="text-xl font-bold text-gray-900">{prediction.weather_data.humidity}%</div>
+                              <div className="text-xs text-gray-500 mt-1">{humidityDescription}</div>
                             </div>
                           </div>
 
-                          <p className="text-sm text-gray-600 mb-3">{prediction.reason}</p>
+                          {/* Calculation Context */}
+                          {prediction.field_info?.area_hectares && (
+                            <div className="px-6 py-4 bg-gray-100 border-t border-gray-200">
+                              <div className="text-sm text-gray-700">
+                                <span className="font-medium">Field Size:</span> {prediction.field_info.area_hectares} hectare{prediction.field_info.area_hectares !== 1 ? 's' : ''}
+                                {prediction.total_water_liters && (
+                                  <>
+                                    <span className="mx-2">|</span>
+                                    <span className="font-medium">Total Volume:</span> ~{prediction.total_water_liters.toLocaleString()} liters
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          )}
 
-                          <div className="flex gap-2">
+                          {/* Actions */}
+                          <div className="px-6 py-4 bg-white border-t border-gray-200">
+                            <div className="flex items-center gap-3 flex-wrap">
+                              {prediction.field_info && (
+                                <details className="group">
+                                  <summary className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer list-none">
+                                    <ChevronDownIcon className="w-4 h-4 group-open:rotate-180 transition-transform" />
+                                    View Field Details
+                                  </summary>
+                                  <div className="absolute mt-2 p-4 bg-white rounded-lg shadow-lg border border-gray-200 z-10 grid grid-cols-2 gap-3 text-sm min-w-[300px]">
+                                    <div><span className="text-gray-500">Crop:</span> <span className="font-medium">{prediction.field_info.crop_type}</span></div>
+                                    <div><span className="text-gray-500">Days planted:</span> <span className="font-medium">{prediction.field_info.crop_days}</span></div>
+                                    <div><span className="text-gray-500">Ground moisture:</span> <span className="font-medium">{prediction.field_info.soil_moisture}%</span></div>
+                                    <div><span className="text-gray-500">Soil type:</span> <span className="font-medium">{prediction.field_info.soil_type}</span></div>
+                                    <div><span className="text-gray-500">Region:</span> <span className="font-medium">{prediction.field_info.region}</span></div>
+                                    <div><span className="text-gray-500">Season:</span> <span className="font-medium">{prediction.field_info.season}</span></div>
+                                  </div>
+                                </details>
+                              )}
+                              <button 
+                                onClick={() => window.location.href = `/fields/${prediction.field_id}`}
+                                className="px-4 py-2 text-sm text-gray-700 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+                              >
+                                View Field
+                              </button>
+                              <button 
+                                onClick={() => generateScheduleForField(prediction.field_id, prediction.field_name)}
+                                disabled={generatingForField === prediction.field_id}
+                                className={`px-6 py-2 text-sm font-semibold text-white ${config.button} rounded-lg transition-colors ml-auto disabled:opacity-50 flex items-center gap-2`}
+                              >
+                                {generatingForField === prediction.field_id ? (
+                                  <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    Creating...
+                                  </>
+                                ) : (
+                                  'Create Irrigation Schedule'
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Mobile Card - Vertical Layout */}
+                        <div className="md:hidden border border-gray-200 rounded-xl overflow-hidden shadow-lg">
+                          {/* Hero Section */}
+                          <div className={`bg-gradient-to-br ${config.gradient} px-6 py-6 text-white`}>
+                            <div className="flex items-start justify-between mb-3">
+                              <h2 className="text-2xl font-bold">{prediction.field_name}</h2>
+                              <span className="text-2xl">
+                                {prediction.priority === 'critical' ? '⚠️' :
+                                 prediction.priority === 'high' ? '🔔' :
+                                 prediction.priority === 'medium' ? '📋' : '✅'}
+                              </span>
+                            </div>
+                            <p className="text-lg font-medium opacity-95">
+                              {config.label}
+                            </p>
+                            <p className="text-sm opacity-80 mt-1">
+                              {prediction.priority_description || 'Review recommendation below'}
+                            </p>
+                          </div>
+
+                          {/* Data Sections */}
+                          <div className="bg-white px-6 py-5 space-y-4">
+                            {/* Weather */}
+                            <div className="pb-4 border-b border-gray-200">
+                              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Weather Conditions</div>
+                              <div className="flex items-center gap-6">
+                                <div className="flex items-center gap-2">
+                                  <ThermometerIcon className="w-5 h-5 text-orange-500" />
+                                  <div>
+                                    <div className="text-lg font-bold text-gray-900">{prediction.weather_data.temperature}°C</div>
+                                    <div className="text-xs text-gray-500">{tempDescription}</div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <CloudRainIcon className="w-5 h-5 text-cyan-500" />
+                                  <div>
+                                    <div className="text-lg font-bold text-gray-900">{prediction.weather_data.humidity}%</div>
+                                    <div className="text-xs text-gray-500">Air Humidity</div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* AI Confidence */}
+                            <div className="pb-4 border-b border-gray-200">
+                              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">AI Confidence</div>
+                              <div className="flex items-center gap-2">
+                                <ShieldCheckIcon className="w-5 h-5 text-green-500" />
+                                <span className="text-lg font-bold text-gray-900">{Math.round(prediction.confidence_score * 100)}%</span>
+                                <span className="text-sm text-gray-600">
+                                  {prediction.confidence_score >= 0.8 ? 'High accuracy' :
+                                   prediction.confidence_score >= 0.6 ? 'Moderate' : 'Low accuracy'}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Recommendation */}
+                            <div>
+                              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Recommendation</div>
+                              <div className="space-y-2">
+                                <div className="flex items-start gap-2">
+                                  <DropletIcon className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                                  <div>
+                                    <div className="text-sm font-medium text-gray-900">Rate: {prediction.predicted_water_amount.toFixed(1)} L/m²</div>
+                                    {prediction.field_info?.area_hectares && prediction.total_water_liters && (
+                                      <div className="text-xs text-gray-600 mt-1">
+                                        Field ({prediction.field_info.area_hectares} ha): ~{prediction.total_water_liters.toLocaleString()} Liters ({totalWaterDisplay})
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Action Area */}
+                          <div className="bg-gray-50 px-6 py-4 space-y-3">
+                            {prediction.field_info && (
+                              <details className="group">
+                                <summary className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200 bg-white cursor-pointer list-none">
+                                  <ChevronDownIcon className="w-4 h-4 group-open:rotate-180 transition-transform" />
+                                  View Field Details
+                                </summary>
+                                <div className="mt-2 p-3 bg-white rounded-lg border border-gray-200 grid grid-cols-2 gap-2 text-xs">
+                                  <div><span className="text-gray-500">Crop:</span> <span className="font-medium">{prediction.field_info.crop_type}</span></div>
+                                  <div><span className="text-gray-500">Days:</span> <span className="font-medium">{prediction.field_info.crop_days}</span></div>
+                                  <div><span className="text-gray-500">Ground:</span> <span className="font-medium">{prediction.field_info.soil_moisture}%</span></div>
+                                  <div><span className="text-gray-500">Soil:</span> <span className="font-medium">{prediction.field_info.soil_type}</span></div>
+                                  <div><span className="text-gray-500">Region:</span> <span className="font-medium">{prediction.field_info.region}</span></div>
+                                  <div><span className="text-gray-500">Season:</span> <span className="font-medium">{prediction.field_info.season}</span></div>
+                                </div>
+                              </details>
+                            )}
                             <button 
                               onClick={() => generateScheduleForField(prediction.field_id, prediction.field_name)}
                               disabled={generatingForField === prediction.field_id}
-                              className="text-primary-600 text-sm font-medium hover:text-primary-700 disabled:opacity-50 flex items-center gap-1"
+                              className={`w-full px-6 py-3 text-base font-semibold text-white ${config.button} rounded-lg transition-colors shadow-md disabled:opacity-50 flex items-center justify-center gap-2`}
                             >
                               {generatingForField === prediction.field_id ? (
                                 <>
-                                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary-600"></div>
-                                  Generating...
+                                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                  Creating Schedule...
                                 </>
                               ) : (
-                                'Generate Schedule'
+                                'Create Irrigation Schedule'
                               )}
                             </button>
                             <button 
                               onClick={() => window.location.href = `/fields/${prediction.field_id}`}
-                              className="text-gray-500 text-sm hover:text-gray-700"
+                              className="w-full text-sm text-gray-600 hover:text-gray-900 transition-colors py-2"
                             >
-                              View Details
+                              View Field
                             </button>
+                          </div>
+
+                          {/* Timestamp */}
+                          <div className="bg-white px-6 py-3 border-t border-gray-200">
+                            <p className="text-xs text-gray-500 text-center">
+                              Updated: {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                            </p>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
           )}
 
-          {/* Analytics Section */}
-          <div className="card mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-semibold text-gray-900">📊 Water Usage Analytics</h3>
-              <span className="text-sm text-gray-500">
-                Last 30 days
-              </span>
-            </div>
-
-            {analyticsLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-                <span className="ml-3 text-gray-600">Analyzing your data...</span>
-              </div>
-            ) : analytics ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary-600 mb-1">
-                    {analytics.total_water_usage.toFixed(1)}L
-                  </div>
-                  <p className="text-sm text-gray-600">Total Water Used</p>
-                </div>
-
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600 mb-1">
-                    {analytics.average_daily_usage.toFixed(1)}L
-                  </div>
-                  <p className="text-sm text-gray-600">Daily Average</p>
-                </div>
-
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600 mb-1">
-                    {analytics.efficiency_metrics.average_rating ?
-                      `${analytics.efficiency_metrics.average_rating.toFixed(1)}⭐` :
-                      'N/A'
-                    }
-                  </div>
-                  <p className="text-sm text-gray-600">Avg Effectiveness</p>
-                </div>
-
-                <div className="text-center">
-                  <div className={`text-2xl font-bold mb-1 ${
-                    analytics.usage_trend.percentage_change && analytics.usage_trend.percentage_change > 0
-                      ? 'text-red-600'
-                      : analytics.usage_trend.percentage_change && analytics.usage_trend.percentage_change < 0
-                      ? 'text-green-600'
-                      : 'text-gray-600'
-                  }`}>
-                    {analytics.usage_trend.percentage_change ?
-                      `${analytics.usage_trend.percentage_change > 0 ? '+' : ''}${analytics.usage_trend.percentage_change.toFixed(1)}%` :
-                      'N/A'
-                    }
-                  </div>
-                  <p className="text-sm text-gray-600">Weekly Trend</p>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <p>No analytics data available yet. Start recording irrigation activities to see insights.</p>
-              </div>
-            )}
-          </div>
-
           {/* Quick Actions */}
-          <div className="card">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-white rounded-xl shadow p-6 mb-8">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <button 
-                onClick={() => window.location.href = '/fields/add'}
-                className="p-4 border-2 border-gray-200 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-all text-left"
+                onClick={() => window.location.href = '/fields/new'}
+                className="p-5 border-2 border-gray-200 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-all text-left"
               >
-                <div className="text-2xl mb-2">🌾</div>
-                <h4 className="font-semibold text-gray-900 mb-1">Add New Field</h4>
-                <p className="text-sm text-gray-600">Register a new field for irrigation scheduling</p>
+                <h4 className="text-lg font-bold text-gray-900 mb-2">Add New Field</h4>
+                <p className="text-base text-gray-600">Register a new field for irrigation scheduling</p>
+              </button>
+              <button
+                onClick={() => window.location.href = '/schedules'}
+                className="p-5 border-2 border-gray-200 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-all text-left"
+              >
+                <h4 className="text-lg font-bold text-gray-900 mb-2">View Schedules</h4>
+                <p className="text-base text-gray-600">Manage your irrigation schedules</p>
               </button>
               <button
                 onClick={() => window.location.href = '/history'}
-                className="p-4 border-2 border-gray-200 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-all text-left"
+                className="p-5 border-2 border-gray-200 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-all text-left"
               >
-                <div className="text-2xl mb-2">�</div>
-                <h4 className="font-semibold text-gray-900 mb-1">View History</h4>
-                <p className="text-sm text-gray-600">Track your irrigation activities</p>
+                <h4 className="text-lg font-bold text-gray-900 mb-2">View History</h4>
+                <p className="text-base text-gray-600">Track your past irrigation activities</p>
               </button>
             </div>
           </div>
 
-          {/* Status Notice */}
-          <div className="mt-8 p-6 bg-green-50 border border-green-200 rounded-lg">
-            <h3 className="text-lg font-semibold text-green-900 mb-2">🎉 Phase 4 Complete: AI-Powered Irrigation</h3>
-            <p className="text-green-700 text-sm">
-              Your irrigation system now features AI-powered scheduling with weather integration!
-              {fields.length === 0 ? ' Add your first field to get started with smart irrigation recommendations.' :
-               predictions.length === 0 ? ' AI analysis is running for your fields.' :
-               ` AI recommendations are ready for ${predictions.length} field${predictions.length > 1 ? 's' : ''}.`}
+          {/* Help Section */}
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
+            <h3 className="text-lg font-bold text-blue-900 mb-2">Need Help?</h3>
+            <p className="text-base text-blue-800">
+              This system uses weather data and soil information to recommend when and how much to water your crops.
+              {fields.length === 0 ? ' Start by adding your first field above.' :
+               predictions.length === 0 ? ' Your fields are being analyzed.' :
+               ' Review the recommendations above and create irrigation schedules for your fields.'}
             </p>
           </div>
         </main>
